@@ -1,7 +1,8 @@
 from libvirt_remote_manager import app
 from flask import request, abort
 from libvirt_remote_manager.virt_api import VirtAPI
-from libvirt_remote_manager._response_data import VMList, Result
+from libvirt_remote_manager._response_data import VMList, Result, HostInfo
+import libvirt_remote_manager.lrm_api as lrm_api
 
 _api: VirtAPI
 
@@ -39,3 +40,10 @@ def poweroff_vm(uuid):
             return Result('success', '').toJSON()
         except Exception as err:
             return Result('failure', str(err)).toJSON()
+
+@app.route('/api/get_device_info')
+def get_device_info():
+    try:
+        return HostInfo(lrm_api.get_lrm_name(), lrm_api.get_lrm_version(), str(lrm_api.get_hostname())).toJSON()
+    except Exception as err:
+        return Result('failure', err).toJSON()

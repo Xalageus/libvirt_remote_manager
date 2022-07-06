@@ -48,3 +48,18 @@ class Result():
         }
 
         return jsonify(data)
+
+class HostInfo():
+    def __init__(self, lrm_name: str, lrm_version: str, hostname: str):
+        self.lrm_name = lrm_name
+        self.lrm_version = lrm_version
+        self.hostname = hostname
+
+    def toJSON(self) -> Response:
+        data = {
+            'lrm_name': self.lrm_name,
+            'lrm_version': self.lrm_version,
+            'hostname': self.hostname
+        }
+
+        return jsonify(data)
