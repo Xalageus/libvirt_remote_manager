@@ -44,6 +44,6 @@ def poweroff_vm(uuid):
 @app.route('/api/get_device_info')
 def get_device_info():
     try:
-        return HostInfo(lrm_api.get_lrm_name(), lrm_api.get_lrm_version(), str(lrm_api.get_hostname())).toJSON()
+        return HostInfo(lrm_api.get_lrm_name(), lrm_api.get_lrm_version(), str(lrm_api.get_hostname()), str(_api.get_libvirt_version())).toJSON()
     except Exception as err:
         return Result('failure', err).toJSON()

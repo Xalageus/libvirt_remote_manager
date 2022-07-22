@@ -71,3 +71,14 @@ class VirtAPI():
         domain = conn.lookupByUUIDString(vm_uuid)
         domain.destroy()
         conn.close()
+
+    def get_libvirt_version(self):
+        conn = self._open_read_only()
+        ver = conn.getLibVersion()
+        conn.close()
+
+        maj_ver = int(ver / 1000000)
+        min_ver = int((ver - (maj_ver * 1000000)) / 1000)
+        rel_ver = int((ver - (maj_ver * 1000000)) - (min_ver * 1000))
+
+        return str(maj_ver) + "." + str(min_ver) + "." + str(rel_ver)
