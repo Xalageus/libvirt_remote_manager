@@ -49,6 +49,19 @@ class Result():
 
         return jsonify(data)
 
+class ResultBool():
+    def __init__(self, status: bool, message: str):
+        self.status = status
+        self.message = message
+
+    def toJSON(self) -> Response:
+        data = {
+            'status': self.status,
+            'msg': self.message
+        }
+
+        return jsonify(data)
+
 class HostInfo():
     def __init__(self, lrm_name: str, lrm_version: str, hostname: str, libvirt_version: str):
         self.lrm_name = lrm_name
