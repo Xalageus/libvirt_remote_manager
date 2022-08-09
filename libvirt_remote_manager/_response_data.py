@@ -2,6 +2,7 @@ from flask import jsonify
 from flask.wrappers import Response
 from typing import List
 import libvirt_remote_manager._vm_md as vm_md
+import libvirt_remote_manager._enums as enums
 
 class VMList():
     def __init__(self, vm_list: List[vm_md.VMMetadata]):
@@ -11,8 +12,8 @@ class VMList():
         data = []
 
         for vm in self.vm_list:
-            state = vm_md.VMState(vm.state)
-            shutoff_reason = vm_md.VMShutoffReason(vm.shutoff_reason)
+            state = enums.VMState(vm.state)
+            shutoff_reason = enums.VMShutoffReason(vm.shutoff_reason)
 
             vm_data = {
                 'name': vm.name,

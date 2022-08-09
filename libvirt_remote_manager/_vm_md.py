@@ -1,27 +1,4 @@
-import enum
-
-class VMState(enum.Enum):
-    nostate = 0
-    running = 1
-    blocked = 2
-    paused = 3
-    shutdown = 4
-    shutoff = 5
-    crashed = 6
-    pm_suspended = 7
-    last = 8
-
-class VMShutoffReason(enum.Enum):
-    unknown = 0
-    shutdown = 1
-    destroyed = 2
-    crashed = 3
-    migrate = 4
-    saved = 5
-    failed = 6
-    from_snapshot = 7
-    daemon = 8
-    last = 9
+import libvirt_remote_manager._enums as enums
 
 class OSNames():
     def __init__(self, name: str, long_id: str, short_id: str, family: str, distro: str):
@@ -32,7 +9,7 @@ class OSNames():
         self.distro = distro
 
 class VMMetadata():
-    def __init__(self, name: str, state: VMState, shutoff_reason: VMShutoffReason, uuid: str, os_names: OSNames):
+    def __init__(self, name: str, state: enums.VMState, shutoff_reason: enums.VMShutoffReason, uuid: str, os_names: OSNames):
         self.name = name
         self.state = state
         self.shutoff_reason = shutoff_reason
