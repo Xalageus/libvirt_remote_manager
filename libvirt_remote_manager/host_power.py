@@ -1,7 +1,10 @@
-import os, psutil
+import os, psutil, requests
 from time import sleep
 from threading import Thread
 from libvirt_remote_manager._enums import PowerType, PowerMethod
+import libvirt_remote_manager.utils as utils
+
+_pom_host = 'http://127.0.0.1:18965'
 
 class HostPower():
     def __init__(self):
@@ -15,12 +18,6 @@ class HostPower():
 
     def _check_if_local(self) -> bool:
         if not os.getenv('SSH_CLIENT') and not os.getenv('SSH_CONNECTION'):
-            return True
-        else:
-            return False
-
-    def _check_if_root(self) -> bool:
-        if os.getuid() == 0:
             return True
         else:
             return False
@@ -44,11 +41,42 @@ class HostPower():
 
         return only
 
+    def _check_pom(self) -> bool:
+        try:
+            r = requests.get(_pom_host + '/api/host/pom/ping', timeout=3)
+            
+            if r.status_code == 200 and r.text == "pong":
+                return True
+            else:
+                return False
+        except:
+            return False
+
+    def _send_pom_shutdown(self) -> bool:
+        try:
+            r = requests.post(_pom_host + '/api/host/pom/shutdown')
+
+            if r.status_code == 200:
+                data = r.json()
+                return data['status']
+        except:
+            return False
+
+    def _send_pom_reboot(self) -> bool:
+        try:
+            r = requests.post(_pom_host + '/api/host/pom/reboot')
+
+            if r.status_code == 200:
+                data = r.json()
+                return data['status']
+        except:
+            return False
+
     def host_shutdown(self) -> bool:
         ptype = PowerType.shutdown
         method: PowerMethod
 
-        if self._check_if_root():
+        if utils.check_if_root():
             if self._check_systemctl():
                 method = PowerMethod.systemd
             else:
@@ -66,13 +94,16 @@ class HostPower():
                 ThreadedHostPower(ptype, method)
                 return True
             else:
-                return False
+                if self._check_pom():
+                    return self._send_pom_shutdown()
+                else:
+                    return False
 
     def host_reboot(self) -> bool:
         ptype = PowerType.reboot
         method: PowerMethod
 
-        if self._check_if_root():
+        if utils.check_if_root():
             if self._check_systemctl():
                 method = PowerMethod.systemd
             else:
@@ -90,7 +121,10 @@ class HostPower():
                 ThreadedHostPower(ptype, method)
                 return True
             else:
-                return False
+                if self._check_pom():
+                    return self._send_pom_reboot()
+                else:
+                    return False
 
 class ThreadedHostPower:
     _WAITTIME = 5
