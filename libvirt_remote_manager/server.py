@@ -60,3 +60,7 @@ def host_reboot():
     hp = HostPower()
     done = hp.host_reboot()
     return ResultBool(done, '').toJSON()
+
+@app.route('/api/host/ping')
+def ping():
+    return "pong"
