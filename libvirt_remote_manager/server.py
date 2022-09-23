@@ -1,7 +1,7 @@
 from libvirt_remote_manager import app
 from flask import request, abort
 from libvirt_remote_manager.virt_api import VirtAPI
-from libvirt_remote_manager._response_data import VMList, Result, HostInfo, ResultBool
+from libvirt_remote_manager._response_data import VMList, Result, HostInfo, ResultBool, VMData
 import libvirt_remote_manager.lrm_api as lrm_api
 from libvirt_remote_manager.host_power import HostPower
 
@@ -9,11 +9,22 @@ _api: VirtAPI
 
 @app.route('/api/get_vms')
 def get_vms():
+    simple = request.args.get('simple', default=False, type=lambda v: v.lower() == 'true')
     try:
-        vms = _api.list_vms()
+        vms = _api.list_vms(simple)
         return VMList(vms).toJSON()
     except Exception as err:
-        return Result('failure', err).toJSON()
+        return Result('failure', str(err)).toJSON()
+
+@app.route('/api/vm/<uuid>', methods=['GET'])
+def get_vm(uuid):
+    if request.method == 'GET':
+        simple = request.args.get('simple', default=False, type=lambda v: v.lower() == 'true')
+        try:
+            vm = _api.get_vm(uuid, simple)
+            return VMData(vm).toJSON()
+        except Exception as err:
+            return Result('failure', str(err)).toJSON()
 
 @app.route('/api/vm/<uuid>/start', methods=['POST'])
 def start_vm(uuid):
@@ -47,7 +58,7 @@ def get_device_info():
     try:
         return HostInfo(lrm_api.get_lrm_name(), lrm_api.get_lrm_version(), str(lrm_api.get_hostname()), str(_api.get_libvirt_version())).toJSON()
     except Exception as err:
-        return Result('failure', err).toJSON()
+        return Result('failure', str(err)).toJSON()
 
 @app.route('/api/host/shutdown', methods=['POST'])
 def host_shutdown():

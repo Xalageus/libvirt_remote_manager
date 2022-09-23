@@ -9,9 +9,11 @@ class OSNames():
         self.distro = distro
 
 class VMMetadata():
-    def __init__(self, name: str, state: enums.VMState, shutoff_reason: enums.VMShutoffReason, uuid: str, os_names: OSNames):
+    def __init__(self, name: str, state: enums.VMState, shutoff_reason: enums.VMShutoffReason, uuid: str, os_names: OSNames = None):
         self.name = name
         self.state = state
         self.shutoff_reason = shutoff_reason
         self.uuid = uuid
-        self.os_names = os_names
+        
+        if os_names != None:
+            self.os_names = os_names

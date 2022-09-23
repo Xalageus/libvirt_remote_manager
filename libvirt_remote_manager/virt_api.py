@@ -43,16 +43,28 @@ class VirtAPI():
 
         return vm_md.OSNames("Generic OS", "generic", "generic", "generic", "generic")
 
-    def list_vms(self) -> List[vm_md.VMMetadata]:
+    def list_vms(self, simple: bool) -> List[vm_md.VMMetadata]:
         conn = self._open_read_only()
         domains = conn.listAllDomains()
         vms = []
         for domain in domains:
             state = domain.state()
-            vms.append(vm_md.VMMetadata(domain.name(), state[0], state[1], domain.UUIDString(), self._get_os_from_xml(domain.XMLDesc())))
+            if simple:
+                vms.append(vm_md.VMMetadata(domain.name(), state[0], state[1], domain.UUIDString()))
+            else:
+                vms.append(vm_md.VMMetadata(domain.name(), state[0], state[1], domain.UUIDString(), self._get_os_from_xml(domain.XMLDesc())))
 
         conn.close()
         return vms
+
+    def get_vm(self, vm_uuid: str, simple: bool) -> vm_md.VMMetadata:
+        conn = self._open_read_only()
+        domain = conn.lookupByUUIDString(vm_uuid)
+        state = domain.state()
+        if simple:
+            return vm_md.VMMetadata(domain.name(), state[0], state[1], domain.UUIDString())
+        else:
+            return vm_md.VMMetadata(domain.name(), state[0], state[1], domain.UUIDString(), self._get_os_from_xml(domain.XMLDesc()))
 
     def start_vm(self, vm_uuid: str):
         conn = self._open()
