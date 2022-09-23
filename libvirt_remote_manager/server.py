@@ -15,7 +15,7 @@ def get_vms():
     except Exception as err:
         return Result('failure', err).toJSON()
 
-@app.route('/api/<uuid>/start', methods=['POST'])
+@app.route('/api/vm/<uuid>/start', methods=['POST'])
 def start_vm(uuid):
     if request.method == 'POST':
         try:
@@ -24,7 +24,7 @@ def start_vm(uuid):
         except Exception as err:
             return Result('failure', str(err)).toJSON()
 
-@app.route('/api/<uuid>/shutdown', methods=['POST'])
+@app.route('/api/vm/<uuid>/shutdown', methods=['POST'])
 def shutdown_vm(uuid):
     if request.method == 'POST':
         try:
@@ -33,7 +33,7 @@ def shutdown_vm(uuid):
         except Exception as err:
             return Result('failure', str(err)).toJSON()
 
-@app.route('/api/<uuid>/poweroff', methods=['POST'])
+@app.route('/api/vm/<uuid>/poweroff', methods=['POST'])
 def poweroff_vm(uuid):
     if request.method == 'POST':
         try:
