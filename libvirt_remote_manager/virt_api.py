@@ -84,6 +84,18 @@ class VirtAPI():
         domain.destroy()
         conn.close()
 
+    def resume_vm(self, vm_uuid: str):
+        conn = self._open()
+        domain = conn.lookupByUUIDString(vm_uuid)
+        domain.resume()
+        conn.close()
+
+    def pause_vm(self, vm_uuid: str):
+        conn = self._open()
+        domain = conn.lookupByUUIDString(vm_uuid)
+        domain.suspend()
+        conn.close()
+
     def get_libvirt_version(self):
         conn = self._open_read_only()
         ver = conn.getLibVersion()

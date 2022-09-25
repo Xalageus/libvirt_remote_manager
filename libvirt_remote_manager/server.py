@@ -65,6 +65,28 @@ def poweroff_vm(uuid):
         except Exception as err:
             return Result('failure', str(err)).toJSON()
 
+@app.route('/api/vm/<uuid>/resume', methods=['POST'])
+def resume_vm(uuid):
+    if request.method == 'POST':
+        if debug:
+            utils.debug_print_request(request.url)
+        try:
+            _api.resume_vm(uuid)
+            return Result('success', '').toJSON()
+        except Exception as err:
+            return Result('failure', str(err)).toJSON()
+
+@app.route('/api/vm/<uuid>/pause', methods=['POST'])
+def pause_vm(uuid):
+    if request.method == 'POST':
+        if debug:
+            utils.debug_print_request(request.url)
+        try:
+            _api.pause_vm(uuid)
+            return Result('success', '').toJSON()
+        except Exception as err:
+            return Result('failure', str(err)).toJSON()
+
 @app.route('/api/get_device_info')
 def get_device_info():
     if debug:
