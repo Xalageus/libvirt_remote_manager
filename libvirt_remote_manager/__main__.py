@@ -8,6 +8,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog=lrm_name)
     parser.add_argument('--pom', help='Power only mode', action='store_true')
     parser.add_argument('--debug', help='Enable debug mode', action='store_true')
+    parser.add_argument('--port', help="Set port (doesn't affect POM)", type=int)
     args = parser.parse_args()
 
     if(args.pom):
@@ -23,4 +24,4 @@ if __name__ == "__main__":
         import libvirt_remote_manager.server
         libvirt_remote_manager.server.debug = args.debug
         libvirt_remote_manager.server._api = VirtAPI()
-        serve(app, host="0.0.0.0", port=18964)
+        serve(app, host="0.0.0.0", port=args.port or 18964)
