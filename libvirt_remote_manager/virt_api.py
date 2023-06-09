@@ -59,6 +59,7 @@ class VirtAPI():
             return vms
         except Exception as e:
             logging.error(e)
+            raise e
 
     def get_vm(self, vm_uuid: str, simple: bool) -> vm_md.VMMetadata:
         try:
@@ -71,6 +72,7 @@ class VirtAPI():
                 return vm_md.VMMetadata(domain.name(), state[0], state[1], domain.UUIDString(), self._get_os_from_xml(domain.XMLDesc()))
         except Exception as e:
             logging.error(e)
+            raise e
 
     def start_vm(self, vm_uuid: str):
         try:
@@ -80,6 +82,7 @@ class VirtAPI():
             conn.close()
         except Exception as e:
             logging.error(e)
+            raise e
 
     def shutdown_vm(self, vm_uuid: str):
         try:
@@ -89,6 +92,7 @@ class VirtAPI():
             conn.close()
         except Exception as e:
             logging.error(e)
+            raise e
 
     def poweroff_vm(self, vm_uuid: str):
         try:
@@ -98,6 +102,7 @@ class VirtAPI():
             conn.close()
         except Exception as e:
             logging.error(e)
+            raise e
 
     def resume_vm(self, vm_uuid: str):
         try:
@@ -107,6 +112,7 @@ class VirtAPI():
             conn.close()
         except Exception as e:
             logging.error(e)
+            raise e
 
     def pause_vm(self, vm_uuid: str):
         try:
@@ -116,6 +122,7 @@ class VirtAPI():
             conn.close()
         except Exception as e:
             logging.error(e)
+            raise e
 
     def get_libvirt_version(self):
         try:
@@ -130,3 +137,4 @@ class VirtAPI():
             return str(maj_ver) + "." + str(min_ver) + "." + str(rel_ver)
         except Exception as e:
             logging.error(e)
+            raise e
