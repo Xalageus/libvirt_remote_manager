@@ -123,6 +123,12 @@ class VirtAPI():
         except Exception as e:
             logging.error(e)
             raise e
+        
+    def _convert_version(self, ver):
+        maj_ver = int(ver / 1000000)
+        min_ver = int((ver - (maj_ver * 1000000)) / 1000)
+        rel_ver = int((ver - (maj_ver * 1000000)) - (min_ver * 1000))
+        return str(maj_ver) + "." + str(min_ver) + "." + str(rel_ver)
 
     def get_libvirt_version(self):
         try:
@@ -130,11 +136,18 @@ class VirtAPI():
             ver = conn.getLibVersion()
             conn.close()
 
-            maj_ver = int(ver / 1000000)
-            min_ver = int((ver - (maj_ver * 1000000)) / 1000)
-            rel_ver = int((ver - (maj_ver * 1000000)) - (min_ver * 1000))
+            return self._convert_version(ver)
+        except Exception as e:
+            logging.error(e)
+            raise e
+        
+    def get_hypervisor_version(self):
+        try:
+            conn = self._open_read_only()
+            ver = conn.getVersion()
+            conn.close()
 
-            return str(maj_ver) + "." + str(min_ver) + "." + str(rel_ver)
+            return self._convert_version(ver)
         except Exception as e:
             logging.error(e)
             raise e
