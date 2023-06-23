@@ -18,12 +18,12 @@ def pair_required(f):
     @wraps(f)
     def d(*args, **kwargs):
         try:
-            device_uuid, _ = s_utils.get_device_creds(request)
+            device_uuid = s_utils.get_sent_device_uuid(request)
             if(s_utils.paired(request, pairh)):
                 # Device is paired but I don't want to catch exceptions inside f
                 pass
             else:
-                raise ex.CMDAttemptException(str(device_uuid), request.remote_addr, "paired")
+                raise ex.CMDAttemptException(device_uuid, request.remote_addr, "paired")
         except Exception as err:
             return responses.Result('failure', str(err)).toJSON()
         return f(*args, **kwargs)
@@ -33,15 +33,15 @@ def trusted_or_localhost_required(f):
     @wraps(f)
     def d(*args, **kwargs):
         try:
-            device_uuid, _ = s_utils.get_device_creds(request)
+            device_uuid = s_utils.get_sent_device_uuid(request)
             if(s_utils.paired(request, pairh) or utils.check_if_local_addr(request.remote_addr)):
                 if(utils.check_if_local_addr(request.remote_addr) or pairh.trusted(str(device_uuid))):
                     # Device is paired and trusted or localhost but I don't want to catch exceptions inside f
                     pass
                 else:
-                    raise ex.CMDAttemptException(str(device_uuid), request.remote_addr, "trusted")
+                    raise ex.CMDAttemptException(device_uuid, request.remote_addr, "trusted")
             else:
-                raise ex.CMDAttemptException(str(device_uuid), request.remote_addr, "trusted")
+                raise ex.CMDAttemptException(device_uuid, request.remote_addr, "trusted")
         except Exception as err:
             return responses.Result('failure', str(err)).toJSON()
         return f(*args, **kwargs)
@@ -51,12 +51,12 @@ def trusted_required(f):
     @wraps(f)
     def d(*args, **kwargs):
         try:
-            device_uuid, _ = s_utils.get_device_creds(request)
+            device_uuid = s_utils.get_sent_device_uuid(request)
             if(s_utils.paired(request, pairh) and pairh.trusted(str(device_uuid))):
                 # Device is paired and trusted but I don't want to catch exceptions inside f
                 pass
             else:
-                raise ex.CMDAttemptException(str(device_uuid), request.remote_addr, "trusted")
+                raise ex.CMDAttemptException(device_uuid, request.remote_addr, "trusted")
         except Exception as err:
             return responses.Result('failure', str(err)).toJSON()
         return f(*args, **kwargs)

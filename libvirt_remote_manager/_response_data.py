@@ -91,13 +91,15 @@ class HostInfo(JSONResponse):
         }
 
 class PairInfo(JSONResponse):
-    def __init__(self, pair_key: str, status: enums.PairKeyStatus = enums.PairKeyStatus.not_paired):
+    def __init__(self, pair_key: str, pair_time: int, status: enums.PairKeyStatus = enums.PairKeyStatus.not_paired):
         super().__init__()
         self.pair_key = pair_key
+        self.pair_time = pair_time
         self.status = status
 
         self.data = {
             'pair_key': self.pair_key,
+            'pair_time': self.pair_time,
             'status': self.status.value
         }
 

@@ -8,7 +8,16 @@ def get_device_creds(req: flask.Request) -> tuple[uuid.UUID, str]:
         return (utils.str_to_uuid4(req.headers['X-Device-Uuid']), req.headers['X-Device-Key'])
     else:
         raise ex.MissingCredentials()
+    
+def get_sent_device_uuid(req: flask.Request) -> uuid.UUID or None:
+    if('X-Device-Uuid') in req.headers:
+        return utils.str_to_uuid4(req.headers['X-Device-Uuid'])
+    else:
+        return None
 
 def paired(req: flask.Request, ph: PairHost) -> bool:
-    device_uuid, device_key = get_device_creds(req)
-    return ph.check_device(str(device_uuid), device_key)
+    if get_sent_device_uuid(req):
+        device_uuid, device_key = get_device_creds(req)
+        return ph.check_device(str(device_uuid), device_key)
+    else:
+        return False

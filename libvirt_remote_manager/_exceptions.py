@@ -1,4 +1,4 @@
-import logging, inspect
+import logging, inspect, uuid
 from typing import List
 
 # Setup LogException logger
@@ -113,10 +113,10 @@ class DeviceMissingException(LogException):
         super().__init__(self.msg, self.log_level)
 
 class CMDAttemptException(LogException):
-    def __init__(self, device_uuid: str, addr: str, cmd: str):
+    def __init__(self, device_uuid: uuid.UUID, addr: str, cmd: str):
         self.device_uuid = device_uuid
         if self.device_uuid:
-            self.msg = "Device with uuid " + device_uuid + " (" + addr + ") attempted to use a " + cmd + " command"
+            self.msg = "Device with uuid " + str(device_uuid) + " (" + addr + ") attempted to use a " + cmd + " command"
         else:
             self.msg = "Device at " + addr + " attempted to use a " + cmd + " command"
         self.log_level = "WARNING"

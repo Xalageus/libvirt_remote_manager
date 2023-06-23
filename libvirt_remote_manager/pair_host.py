@@ -18,6 +18,9 @@ class PairKey():
     def check_valid(self) -> bool:
         return (datetime.datetime.now() - self._created_time).seconds < self.pair_time
     
+    def time_remaining(self) -> int:
+        return self.pair_time - (datetime.datetime.now() - self._created_time).seconds
+    
     def old(self) -> bool:
         if self.done:
             if (datetime.datetime.now() - self._created_time).seconds > (self.pair_time * 2):
@@ -44,13 +47,13 @@ class PairHost():
             if key.old():
                 self._pairkeys.remove(key)
 
-    def start_pair(self, pair_time=PAIR_TIME) -> int:
+    def start_pair(self, pair_time=PAIR_TIME) -> tuple[int, int]:
         self._check_db_thread()
         self._cleanup_keys()
 
         key = PairKey(pair_time)
         self._pairkeys.append(key)
-        return key.key
+        return (key.key, key.pair_time)
     
     def pair_attempt(self, device_name: str, device_uuid: str, pin: str) -> str:
         self._check_db_thread()
@@ -66,14 +69,14 @@ class PairHost():
             
         raise ex.PairFailException(device_uuid, pin)
 
-    def check_pair(self, pin: str) -> enums.PairKeyStatus:
+    def check_pair(self, pin: str) -> tuple[int, enums.PairKeyStatus]:
         self._cleanup_keys()
 
         for key in self._pairkeys:
             if key.key == pin:
-                return enums.PairKeyStatus(key.done)
+                return (key.time_remaining(), enums.PairKeyStatus(key.done))
         
-        return enums.PairKeyStatus.expired
+        return (0, enums.PairKeyStatus.expired)
     
     def trust_device(self, device_uuid: str):
         self._check_db_thread()

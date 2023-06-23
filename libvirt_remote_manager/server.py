@@ -125,9 +125,11 @@ def pair_start():
         pair_time = request.args.get('pair_time')
         logging.info("Starting pair using " + request.remote_addr)
         if(pair_time):
-            return responses.PairInfo(pair_key=pairh.start_pair(pair_time)).toJSON()
+            pair_key, pair_time = pairh.start_pair(pair_time)
+            return responses.PairInfo(pair_key, pair_time).toJSON()
         else:
-            return responses.PairInfo(pair_key=pairh.start_pair()).toJSON()
+            pair_key, pair_time = pairh.start_pair()
+            return responses.PairInfo(pair_key, pair_time).toJSON()
     except Exception as err:
         return responses.Result('failure', str(err)).toJSON()
 
@@ -175,7 +177,8 @@ def unpair_device():
 def pair_check():
     try:
         pair_key = request.args.get('pair_key', type=str)
-        return responses.PairInfo(pair_key, pairh.check_pair(pair_key)).toJSON()
+        remaining_time, status = pairh.check_pair(pair_key)
+        return responses.PairInfo(pair_key, remaining_time, status).toJSON()
     except Exception as err:
         return responses.Result('failure', str(err)).toJSON()
 
