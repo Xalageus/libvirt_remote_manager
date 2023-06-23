@@ -1,107 +1,225 @@
 import logging
 from libvirt_remote_manager import app
 from flask import request, abort
-from libvirt_remote_manager.virt_api import VirtAPI
-from libvirt_remote_manager._response_data import VMList, Result, HostInfo, ResultBool, VMData
+import libvirt_remote_manager._response_data as responses
 import libvirt_remote_manager.lrm_api as lrm_api
 from libvirt_remote_manager.host_power import HostPower
-
-_api: VirtAPI
+import libvirt_remote_manager._exceptions as ex
+import libvirt_remote_manager.utils as utils
+import libvirt_remote_manager.server_utils as s_utils
+from libvirt_remote_manager.server_dec import debug_log_url, pair_required, trusted_or_localhost_required, trusted_required
+from libvirt_remote_manager.server_objs import api, pairh
 
 @app.route('/api/get_vms')
+@debug_log_url
+@pair_required
 def get_vms():
-    logging.debug(request.url)
-    simple = request.args.get('simple', default=False, type=lambda v: v.lower() == 'true')
     try:
-        vms = _api.list_vms(simple)
-        return VMList(vms).toJSON()
-    except Exception as err:
-        return Result('failure', str(err)).toJSON()
-
-@app.route('/api/vm/<uuid>', methods=['GET'])
-def get_vm(uuid):
-    if request.method == 'GET':
-        logging.debug(request.url)
         simple = request.args.get('simple', default=False, type=lambda v: v.lower() == 'true')
-        try:
-            vm = _api.get_vm(uuid, simple)
-            return VMData(vm).toJSON()
-        except Exception as err:
-            return Result('failure', str(err)).toJSON()
+        vms = api.list_vms(simple)
+        return responses.VMList(vms).toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
+
+@app.route('/api/vm/<uuid>')
+@debug_log_url
+@pair_required
+def get_vm(uuid):
+    try:
+        simple = request.args.get('simple', default=False, type=lambda v: v.lower() == 'true')
+        vm = api.get_vm(uuid, simple)
+        return responses.VMData(vm).toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
 
 @app.route('/api/vm/<uuid>/start', methods=['POST'])
+@debug_log_url
+@pair_required
 def start_vm(uuid):
-    if request.method == 'POST':
-        logging.debug(request.url)
-        try:
-            _api.start_vm(uuid)
-            return Result('success', '').toJSON()
-        except Exception as err:
-            return Result('failure', str(err)).toJSON()
+    try:
+        api.start_vm(uuid)
+        return responses.Result('success', '').toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
 
 @app.route('/api/vm/<uuid>/shutdown', methods=['POST'])
+@debug_log_url
+@pair_required
 def shutdown_vm(uuid):
-    if request.method == 'POST':
-        logging.debug(request.url)
-        try:
-            _api.shutdown_vm(uuid)
-            return Result('success', '').toJSON()
-        except Exception as err:
-            return Result('failure', str(err)).toJSON()
+    try:
+        api.shutdown_vm(uuid)
+        return responses.Result('success', '').toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
 
 @app.route('/api/vm/<uuid>/poweroff', methods=['POST'])
+@debug_log_url
+@pair_required
 def poweroff_vm(uuid):
-    if request.method == 'POST':
-        logging.debug(request.url)
-        try:
-            _api.poweroff_vm(uuid)
-            return Result('success', '').toJSON()
-        except Exception as err:
-            return Result('failure', str(err)).toJSON()
+    try:
+        api.poweroff_vm(uuid)
+        return responses.Result('success', '').toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
 
 @app.route('/api/vm/<uuid>/resume', methods=['POST'])
+@debug_log_url
+@pair_required
 def resume_vm(uuid):
-    if request.method == 'POST':
-        logging.debug(request.url)
-        try:
-            _api.resume_vm(uuid)
-            return Result('success', '').toJSON()
-        except Exception as err:
-            return Result('failure', str(err)).toJSON()
+    try:
+        api.resume_vm(uuid)
+        return responses.Result('success', '').toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
 
 @app.route('/api/vm/<uuid>/pause', methods=['POST'])
+@debug_log_url
+@pair_required
 def pause_vm(uuid):
-    if request.method == 'POST':
-        logging.debug(request.url)
-        try:
-            _api.pause_vm(uuid)
-            return Result('success', '').toJSON()
-        except Exception as err:
-            return Result('failure', str(err)).toJSON()
-
-@app.route('/api/get_device_info')
-def get_device_info():
-    logging.debug(request.url)
     try:
-        return HostInfo(lrm_api.get_lrm_name(), lrm_api.get_lrm_version(), str(lrm_api.get_hostname()), str(_api.get_libvirt_version())).toJSON()
+        api.pause_vm(uuid)
+        return responses.Result('success', '').toJSON()
     except Exception as err:
-        return Result('failure', str(err)).toJSON()
+        return responses.Result('failure', str(err)).toJSON()
+
+@app.route('/api/get_host_info')
+@debug_log_url
+def get_host_info():
+    try:
+        return responses.HostInfo(lrm_api.get_lrm_name(), lrm_api.get_lrm_version(), lrm_api.get_hostname(), api.get_libvirt_version(), api.get_hypervisor_version(), str(pairh.get_host_uuid())).toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
 
 @app.route('/api/host/shutdown', methods=['POST'])
+@debug_log_url
+@pair_required
 def host_shutdown():
-    logging.debug(request.url)
-    hp = HostPower()
-    done = hp.host_shutdown()
-    return ResultBool(done, '').toJSON()
+    try:
+        hp = HostPower()
+        done = hp.host_shutdown()
+        return responses.ResultBool(done, '').toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
 
 @app.route('/api/host/reboot', methods=['POST'])
+@debug_log_url
+@pair_required
 def host_reboot():
-    logging.debug(request.url)
-    hp = HostPower()
-    done = hp.host_reboot()
-    return ResultBool(done, '').toJSON()
+    try:
+        hp = HostPower()
+        done = hp.host_reboot()
+        return responses.ResultBool(done, '').toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
 
 @app.route('/api/host/ping')
+@debug_log_url
 def ping():
-    logging.debug(request.url)
     return "pong"
+
+@app.route('/api/pair/start')
+@debug_log_url
+@trusted_or_localhost_required
+def pair_start():
+    try:
+        pair_time = request.args.get('pair_time')
+        logging.info("Starting pair using " + request.remote_addr)
+        if(pair_time):
+            return responses.PairInfo(pair_key=pairh.start_pair(pair_time)).toJSON()
+        else:
+            return responses.PairInfo(pair_key=pairh.start_pair()).toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
+
+@app.route('/api/pair/pair', methods=['POST'])
+@debug_log_url
+def pair():
+    try:
+        device_name = request.args.get('device_name')
+        device_uuid = request.args.get('device_uuid')
+        pin = request.args.get('pin', type=str)
+        logging.info("Pair attempt from " + request.remote_addr + " (" + device_uuid + ")")
+        device_key = pairh.pair_attempt(device_name, device_uuid, pin)
+        return responses.PairSuccessInfo(device_uuid, device_key, str(pairh.get_host_uuid())).toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
+    
+@app.route('/api/pair/unpair', methods=['POST'])
+@debug_log_url
+@pair_required
+def unpair():
+    try:
+        device_uuid, _ = s_utils.get_device_creds(request)
+        device_name = pairh.get_device(str(device_uuid)).device_name
+        logging.info("Unpairing " + device_name + " (" + str(device_uuid) + ")")
+        pairh.unpair(str(device_uuid))
+        return responses.Result('success', '').toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
+
+@app.route('/api/pair/unpair_device', methods=['POST'])
+@debug_log_url
+@trusted_or_localhost_required
+def unpair_device():
+    try:
+        unpairing_device_uuid = request.args.get('device_uuid')
+        logging.info("Unpairing " + unpairing_device_uuid)
+        pairh.unpair(unpairing_device_uuid)
+        return responses.Result('success', '').toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
+
+@app.route('/api/pair/check')
+@debug_log_url
+@trusted_or_localhost_required
+def pair_check():
+    try:
+        pair_key = request.args.get('pair_key', type=str)
+        return responses.PairInfo(pair_key, pairh.check_pair(pair_key)).toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
+
+@app.route('/api/pair/trust_device', methods=['POST'])
+@debug_log_url
+@trusted_or_localhost_required
+def pair_trust_device():
+    try:
+        device_uuid = request.args.get('device_uuid')
+        logging.warning("Trusting device " + device_uuid)
+        pairh.trust_device(device_uuid)
+        return responses.Result('success', '').toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
+
+@app.route('/api/pair/untrust', methods=['POST'])
+@debug_log_url
+@trusted_required
+def pair_untrust():
+    try:
+        device_uuid, _ = s_utils.get_device_creds(request)
+        logging.warning("Untrusting device " + device_uuid)
+        pairh.untrust_device(device_uuid)
+        return responses.Result('success', '').toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
+    
+@app.route('/api/pair/untrust_device', methods=['POST'])
+@debug_log_url
+@trusted_or_localhost_required
+def pair_untrust_device():
+    try:
+        device_uuid = request.args.get('device_uuid')
+        logging.warning("Untrusting device " + device_uuid)
+        pairh.untrust_device(device_uuid)
+        return responses.Result('success', '').toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
+
+@app.route('/api/pair/get_devices')
+@debug_log_url
+@trusted_or_localhost_required
+def pair_get_devices():
+    try:
+        return responses.DeviceList(pairh.get_devices())
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
