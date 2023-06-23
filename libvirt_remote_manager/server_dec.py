@@ -23,7 +23,7 @@ def pair_required(f):
                 # Device is paired but I don't want to catch exceptions inside f
                 pass
             else:
-                raise ex.CMDAttemptException(str(device_uuid), request.remove_addr, "paired")
+                raise ex.CMDAttemptException(str(device_uuid), request.remote_addr, "paired")
         except Exception as err:
             return responses.Result('failure', str(err)).toJSON()
         return f(*args, **kwargs)
@@ -39,9 +39,9 @@ def trusted_or_localhost_required(f):
                     # Device is paired and trusted or localhost but I don't want to catch exceptions inside f
                     pass
                 else:
-                    raise ex.CMDAttemptException(str(device_uuid), request.remove_addr, "trusted")
+                    raise ex.CMDAttemptException(str(device_uuid), request.remote_addr, "trusted")
             else:
-                raise ex.CMDAttemptException(str(device_uuid), request.remove_addr, "trusted")
+                raise ex.CMDAttemptException(str(device_uuid), request.remote_addr, "trusted")
         except Exception as err:
             return responses.Result('failure', str(err)).toJSON()
         return f(*args, **kwargs)
@@ -56,7 +56,7 @@ def trusted_required(f):
                 # Device is paired and trusted but I don't want to catch exceptions inside f
                 pass
             else:
-                raise ex.CMDAttemptException(str(device_uuid), request.remove_addr, "trusted")
+                raise ex.CMDAttemptException(str(device_uuid), request.remote_addr, "trusted")
         except Exception as err:
             return responses.Result('failure', str(err)).toJSON()
         return f(*args, **kwargs)
