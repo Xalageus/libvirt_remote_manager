@@ -1,4 +1,4 @@
-import logging, select, threading, queue
+import logging, select, threading
 from ssdpy import SSDPServer
 from libvirt_remote_manager import lrm_api as lrm_api
 import libvirt_remote_manager.utils as utils
