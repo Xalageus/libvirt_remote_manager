@@ -29,7 +29,7 @@ class DatabaseThread(threading.Thread):
             if self._ready.is_set():
                 loading = False
             if not self.is_alive():
-                raise ex.DBThreadDied()
+                raise ex.DBThreadDiedException()
 
     def on_thread(self, function: DBFunction, *args, **kwargs):
         call_num = int(utils.generate_rand_4_digits())
