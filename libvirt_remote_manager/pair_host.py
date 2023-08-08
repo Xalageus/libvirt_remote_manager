@@ -37,7 +37,7 @@ class PairHost():
 
     def _check_db_thread(self):
         if not self._db.is_alive():
-            raise ex.DBThreadDied()
+            raise ex.DBThreadDiedException()
 
     def _cleanup_keys(self):
         for key in self._pairkeys:

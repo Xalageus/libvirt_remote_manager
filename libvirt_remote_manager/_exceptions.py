@@ -122,13 +122,13 @@ class CMDAttemptException(LogException):
         self.log_level = "WARNING"
         super().__init__(self.msg, self.log_level)
 
-class DBThreadDied(LogException):
+class DBThreadDiedException(LogException):
     def __init__(self, msg="DBThread died!"):
         self.msg = msg
         self.log_level = "CRITICAL"
         super().__init__(self.msg, self.log_level)
 
-class MissingCredentials(LogException):
+class MissingCredentialsException(LogException):
     def __init__(self, msg="Device did not send required credentials!"):
         self.msg = msg
         self.log_level = "WARNING"

@@ -7,7 +7,7 @@ def get_device_creds(req: flask.Request) -> tuple[uuid.UUID, str]:
     if('X-Device-Uuid' in req.headers and 'X-Device-Key' in req.headers):
         return (utils.str_to_uuid4(req.headers['X-Device-Uuid']), req.headers['X-Device-Key'])
     else:
-        raise ex.MissingCredentials()
+        raise ex.MissingCredentialsException()
     
 def get_sent_device_uuid(req: flask.Request) -> uuid.UUID or None:
     if('X-Device-Uuid') in req.headers:
