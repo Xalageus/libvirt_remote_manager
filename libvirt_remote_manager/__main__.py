@@ -8,9 +8,10 @@ def unhandled_exception(*exc_info):
     logging.critical("An unhandled exception has occurred! Stopping!\n{0}".format("".join(traceback.format_exception(*exc_info))))
     exit(1)
 
-# Gracefull way of stopping thread with a wait
+# Gracefull way of stopping thread with a wait or blocked
 def shutdown(sig, frame):
     libvirt_remote_manager.server_objs.pairh.cleanup()
+    libvirt_remote_manager.server_objs.ssdp.stop()
     exit()
 
 if __name__ == "__main__":
@@ -22,6 +23,7 @@ if __name__ == "__main__":
     parser.add_argument('--trust-device', help="Trust device", nargs='?', default=False, const=True, metavar='device uuid')
     parser.add_argument('--untrust-device', help="Untrust device", nargs='?', default=False, const=True, metavar='device uuid')
     parser.add_argument('--list-devices', help="List paired devices", action='store_true')
+    parser.add_argument('--disable-ssdp', help="Disable SSDP discovery", action='store_true')
     parser.add_argument('--log', help="Set logging level (Debug, Info, Warning, Error, Critical)", type=str, default='INFO')
     args = parser.parse_args()
 
@@ -90,9 +92,13 @@ if __name__ == "__main__":
     else:
         from libvirt_remote_manager.virt_api import VirtAPI
         from libvirt_remote_manager.pair_host import PairHost
+        from libvirt_remote_manager.ssdp import ThreadedSSDP
         import libvirt_remote_manager.server_objs
         libvirt_remote_manager.server_objs.api = VirtAPI()
         libvirt_remote_manager.server_objs.pairh = PairHost("data.db")
+        libvirt_remote_manager.server_objs.ssdp = ThreadedSSDP(str(libvirt_remote_manager.server_objs.pairh.get_host_uuid()), port=args.port or 18964)
+        if not args.disable_ssdp:
+            libvirt_remote_manager.server_objs.ssdp.start()
         import libvirt_remote_manager.server
         signal.signal(signal.SIGINT, shutdown)
         serve(app, host="0.0.0.0", port=args.port or 18964)
