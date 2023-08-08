@@ -17,7 +17,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog=lrm_name)
     parser.add_argument('--pom', help='Power only mode', action='store_true')
     parser.add_argument('--port', help="Set port (doesn't affect POM)", type=int)
-    parser.add_argument('--pair', help="Pair device", action='store_true')
+    parser.add_argument('--pair-device', help="Pair device", action='store_true')
+    parser.add_argument('--unpair-device', help="Unpair device", nargs='?', default=False, const=True, metavar='device uuid')
+    parser.add_argument('--trust-device', help="Trust device", nargs='?', default=False, const=True, metavar='device uuid')
+    parser.add_argument('--untrust-device', help="Untrust device", nargs='?', default=False, const=True, metavar='device uuid')
+    parser.add_argument('--list-devices', help="List paired devices", action='store_true')
     parser.add_argument('--log', help="Set logging level (Debug, Info, Warning, Error, Critical)", type=str, default='INFO')
     args = parser.parse_args()
 
@@ -49,8 +53,40 @@ if __name__ == "__main__":
         else:
             logging.critical("Root is required for POM to work! Exiting...")
             exit(1)
-    elif(args.pair):
-        pass
+    elif(args.pair_device):
+        from libvirt_remote_manager.pair_client import PairClient
+        pc = PairClient(args.port or 18964)
+
+        pc.start_pair()
+    elif(args.unpair_device):
+        from libvirt_remote_manager.pair_client import PairClient
+        pc = PairClient(args.port or 18964)
+
+        if args.unpair_device != True:
+            pc.unpair_device(args.unpair_device)
+        else:
+            pc.unpair_device_interactive()
+    elif(args.trust_device):
+        from libvirt_remote_manager.pair_client import PairClient
+        pc = PairClient(args.port or 18964)
+        
+        if args.trust_device != True:
+            pc.trust_device(args.trust_device)
+        else:
+            pc.trust_device_interactive()
+    elif(args.untrust_device):
+        from libvirt_remote_manager.pair_client import PairClient
+        pc = PairClient(args.port or 18964)
+        
+        if args.untrust_device != True:
+            pc.untrust_device(args.untrust_device)
+        else:
+            pc.untrust_device_interactive()
+    elif(args.list_devices):
+        from libvirt_remote_manager.pair_client import PairClient
+        pc = PairClient(args.port or 18964)
+        
+        pc.list_devices()
     else:
         from libvirt_remote_manager.virt_api import VirtAPI
         from libvirt_remote_manager.pair_host import PairHost

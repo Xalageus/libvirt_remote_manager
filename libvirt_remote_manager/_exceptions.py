@@ -87,10 +87,13 @@ class DBTimeoutException(LogException):
         super().__init__(self.msg, self.log_level)
 
 class PairFailException(LogException):
-    def __init__(self, device_uuid: str, pin: str):
+    def __init__(self, device_uuid: str, pin: str, paired: bool):
         self.device_uuid = device_uuid
         self.pin = pin
-        self.msg = "Device with uuid " + self.device_uuid + " used invalid pin " + self.pin
+        if paired:
+            self.msg = "Device with uuid " + self.device_uuid + " is already paired"
+        else:
+            self.msg = "Device with uuid " + self.device_uuid + " used invalid pin " + self.pin
         self.log_level = "WARNING"
         super().__init__(self.msg, self.log_level)
 
@@ -132,4 +135,10 @@ class MissingCredentialsException(LogException):
     def __init__(self, msg="Device did not send required credentials!"):
         self.msg = msg
         self.log_level = "WARNING"
+        super().__init__(self.msg, self.log_level)
+
+class SendAPICallException(LogException):
+    def __init__(self, msg="Failed to call API endpoint!"):
+        self.msg = msg
+        self.log_level = "ERROR"
         super().__init__(self.msg, self.log_level)

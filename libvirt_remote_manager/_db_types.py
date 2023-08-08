@@ -3,3 +3,6 @@ class Device():
         self.device_name = device_name
         self.device_uuid = device_uuid
         self.trusted = trusted
+
+    def __str__(self) -> str:
+        return str(self.device_name) + ", " + str(self.device_uuid)

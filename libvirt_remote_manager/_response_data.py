@@ -122,6 +122,7 @@ class DeviceData(JSONResponse):
         self.device = device
 
         self.data = {
+            'device_name': self.device.device_name,
             'device_uuid': self.device.device_uuid,
             'trusted': self.device.trusted
         }

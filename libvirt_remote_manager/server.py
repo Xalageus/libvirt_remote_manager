@@ -223,6 +223,6 @@ def pair_untrust_device():
 @trusted_or_localhost_required
 def pair_get_devices():
     try:
-        return responses.DeviceList(pairh.get_devices())
+        return responses.DeviceList(pairh.get_devices()).toJSON()
     except Exception as err:
         return responses.Result('failure', str(err)).toJSON()

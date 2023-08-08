@@ -47,6 +47,14 @@ class PairHost():
             if key.old():
                 self._pairkeys.remove(key)
 
+    def _already_paired(self, device_uuid) -> bool:
+        devices = self._db.on_thread(enums.DBFunction.get_devices)
+        for device in devices:
+            if device[1] == device_uuid:
+                return True
+            
+        return False
+
     def start_pair(self, pair_time=PAIR_TIME) -> tuple[int, int]:
         self._check_db_thread()
         self._cleanup_keys()
@@ -60,14 +68,14 @@ class PairHost():
         self._cleanup_keys()
 
         for key in self._pairkeys:
-            if key.key == pin and not key.done:
+            if key.key == pin and not key.done and not self._already_paired(device_uuid):
                 logging.info("Pair success with " + device_uuid)
                 key.done = True
                 device_key = utils.generate_device_key()
                 self._db.on_thread(enums.DBFunction.add_device_pair, device_name, device_uuid, device_key)
                 return device_key
             
-        raise ex.PairFailException(device_uuid, pin)
+        raise ex.PairFailException(device_uuid, pin, self._already_paired(device_uuid))
 
     def check_pair(self, pin: str) -> tuple[int, enums.PairKeyStatus]:
         self._cleanup_keys()
@@ -81,26 +89,24 @@ class PairHost():
     def trust_device(self, device_uuid: str):
         self._check_db_thread()
 
-        devices = self._db.on_thread(enums.DBFunction.get_devices)
-        for device in devices:
-            if device[1] == device_uuid:
-                if device[2]:
-                    raise ex.DeviceTrustException(device_uuid, True)
-                self._db.on_thread(enums.DBFunction.set_device_trusted, device_uuid)
-            
-        raise ex.DeviceMissingException(device_uuid)
+        db_device = self._db.on_thread(enums.DBFunction.get_device_data, device_uuid)
+        if db_device:
+            if db_device[2]:
+                raise ex.DeviceTrustException(device_uuid, True)
+            self._db.on_thread(enums.DBFunction.set_device_trusted, device_uuid)
+        else:
+            raise ex.DeviceMissingException(device_uuid)
     
     def untrust_device(self, device_uuid: str):
         self._check_db_thread()
 
-        devices = self._db.on_thread(enums.DBFunction.get_devices)
-        for device in devices:
-            if device[1] == device_uuid:
-                if not device[2]:
-                    raise ex.DeviceTrustException(device_uuid, False)
-                self._db.on_thread(enums.DBFunction.set_device_untrusted, device_uuid)
-            
-        raise ex.DeviceMissingException(device_uuid)
+        db_device = self._db.on_thread(enums.DBFunction.get_device_data, device_uuid)
+        if db_device:
+            if not db_device[2]:
+                raise ex.DeviceTrustException(device_uuid, False)
+            self._db.on_thread(enums.DBFunction.set_device_untrusted, device_uuid)
+        else:
+            raise ex.DeviceMissingException(device_uuid)
     
     def check_device(self, device_uuid: str, device_key: str) -> bool:
         self._check_db_thread()
@@ -146,9 +152,9 @@ class PairHost():
 
         db_device = self._db.on_thread(enums.DBFunction.get_device_data, device_uuid)
         if db_device:
-            self._db.on_thread(enums.DBFunction.delete_device_pair)
-
-        raise ex.DeviceMissingException()
+            self._db.on_thread(enums.DBFunction.delete_device_pair, device_uuid)
+        else:
+            raise ex.DeviceMissingException(device_uuid)
 
     def get_host_uuid(self):
         self._check_db_thread()

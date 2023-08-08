@@ -103,6 +103,9 @@ class DatabaseThread(threading.Thread):
                             result = "DONE"
                         case 5:
                             result = self._db.get_device_data(args[0])
+                        case 6:
+                            self._db.delete_device_pair(args[0])
+                            result = "DONE"
                         case _:
                             result = "INVALIDFUNCTION"
                     if result != None:
@@ -125,14 +128,19 @@ class DatabaseThread(threading.Thread):
 
 class Database():
     def __init__(self, dbFile: str):
+        sqlite3.register_converter("BOOLEAN", self._convertBool)
+
         if self._verify_db_file(dbFile):
-            self._con = sqlite3.connect(dbFile)
+            self._con = sqlite3.connect(dbFile, detect_types=sqlite3.PARSE_DECLTYPES)
             self._cur = self._con.cursor()
 
             if not self._verify_db_tables():
                 self._create_db()
         else:
             raise ex.DBCorruptionException()
+        
+    def _convertBool(self, col):
+        return bool(int(col))
 
     def _verify_db_file(self, dbFile: str) -> bool:
         if os.path.isfile(dbFile):
@@ -176,11 +184,11 @@ class Database():
         return row
     
     def add_device_pair(self, device_name: str, device_uuid: str, device_key: str):
-        self._cur.execute('INSERT INTO DevicePairs Values(null, ?, ?, ?, ?)', (device_name, device_uuid, device_key, str(False)))
+        self._cur.execute('INSERT INTO DevicePairs Values(null, ?, ?, ?, ?)', (device_name, device_uuid, device_key, False))
         self._con.commit()
 
     def set_device_trusted(self, device_uuid: str):
-        self._cur.execute('UPDATE DevicePairs SET Trusted=? WHERE DeviceUUID=?;', (str(True), device_uuid))
+        self._cur.execute('UPDATE DevicePairs SET Trusted=? WHERE DeviceUUID=?;', (True, device_uuid))
         self._con.commit()
 
     def get_devices(self):
@@ -190,7 +198,7 @@ class Database():
         return rows
     
     def set_device_untrusted(self, device_uuid: str):
-        self._cur.execute('UPDATE DevicePairs SET Trusted=? WHERE DeviceUUID=?;', (str(False), device_uuid))
+        self._cur.execute('UPDATE DevicePairs SET Trusted=? WHERE DeviceUUID=?;', (False, device_uuid))
         self._con.commit()
 
     def get_device_data(self, device_uuid: str):
