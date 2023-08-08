@@ -126,7 +126,7 @@ class HostPower():
                 else:
                     return False
 
-class ThreadedHostPower:
+class ThreadedHostPower():
     _WAITTIME = 5
 
     def _shutdown_systemctl(self):
