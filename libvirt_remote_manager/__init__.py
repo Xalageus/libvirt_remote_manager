@@ -1,4 +1,4 @@
-__version__ = "0.1.2"
+__version__ = "0.2.0"
 __name__ = "libvirt_remote_manager"
 
 from flask import Flask
