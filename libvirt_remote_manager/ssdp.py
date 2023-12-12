@@ -1,12 +1,16 @@
 import logging, select, threading
-from ssdpy import SSDPServer
+import ssdpy
 from libvirt_remote_manager import lrm_api as lrm_api
 import libvirt_remote_manager.utils as utils
+
+# Filter out debug ssdpy logging from all other levels except "Verbose"
+if logging.getLogger().level != 5:
+    ssdpy.server.logger.setLevel("INFO")
 
 class ThreadedSSDP(threading.Thread):
     def run(self):
         logging.debug("Starting SSDP thread")
-        server = SSDPServer("uuid:" + self._host_uuid + "::ssdp:" + lrm_api.get_lrm_name(), location="http://" + utils.get_local_ip() + ":" + str(self._port) + "/", device_type="ssdp:" + lrm_api.get_lrm_name())
+        server = ssdpy.SSDPServer("uuid:" + self._host_uuid + "::ssdp:" + lrm_api.get_lrm_name(), location="http://" + utils.get_local_ip() + ":" + str(self._port) + "/", device_type="ssdp:" + lrm_api.get_lrm_name())
         server.sock.setblocking(0)
 
         while self._running:

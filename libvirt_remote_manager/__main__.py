@@ -24,11 +24,12 @@ if __name__ == "__main__":
     parser.add_argument('--untrust-device', help="Untrust device", nargs='?', default=False, const=True, metavar='device uuid')
     parser.add_argument('--list-devices', help="List paired devices", action='store_true')
     parser.add_argument('--disable-ssdp', help="Disable SSDP discovery", action='store_true')
-    parser.add_argument('--log', help="Set logging level (Debug, Info, Warning, Error, Critical)", type=str, default='INFO')
+    parser.add_argument('--log', help="Set logging level (Verbose, Debug, Info, Warning, Error, Critical)", type=str, default='INFO')
     args = parser.parse_args()
 
     #Setup logger
     log_levels = {
+        'VERBOSE': 5,
         'DEBUG': logging.DEBUG,
         'INFO': logging.INFO,
         'WARNING': logging.WARNING,
@@ -38,7 +39,7 @@ if __name__ == "__main__":
     log_level = log_levels.get(args.log.upper())
     if log_level is None:
         raise ValueError('Invalid log level: %s' % args.log)
-    if log_level == logging.DEBUG:
+    if log_level == logging.DEBUG or log_level == 5:
         fmt = '[%(asctime)s] [%(levelname)s] [%(module)s] [%(threadName)s] %(message)s'
         print(lrm_name + " " + lrm_version)
     else:
