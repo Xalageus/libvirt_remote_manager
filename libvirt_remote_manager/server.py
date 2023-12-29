@@ -226,3 +226,13 @@ def pair_get_devices():
         return responses.DeviceList(pairh.get_devices()).toJSON()
     except Exception as err:
         return responses.Result('failure', str(err)).toJSON()
+
+@app.route('/api/pair/get_device_info')
+@debug_log_url
+@pair_required
+def pair_get_device_info():
+    try:
+        device_uuid, _ = s_utils.get_device_creds(request)
+        return responses.DeviceData(pairh.get_device(str(device_uuid))).toJSON()
+    except Exception as err:
+        return responses.Result('failure', str(err)).toJSON()
